@@ -83,7 +83,7 @@ def get_media_ids(first_date, last_date, base_query):
         new_ids = [media['id'] for media in medias]
         media_ids = media_ids + new_ids
         page += 1
-    return media_ids
+    return list(set(media_ids))
 
 def get_cast_ids(media_id, query):
     """Retrieves the set of tuples of actor (id, name) for a given movie or tv show
@@ -118,10 +118,10 @@ if __name__ == '__main__':
     last_date = '2018-12-31'
 
     movie_ids = get_media_ids(first_date, last_date, base_query=MOVIE_DISC_QUERY)
-    print('\nRetrieved a total of {} movie ids\n'.format(len(set(movie_ids))))
+    print('\nRetrieved a total of {} movie ids\n'.format(len(movie_ids)))
 
     tv_ids = get_media_ids(first_date, last_date, base_query=TV_DISC_QUERY)
-    print('\nRetrieved a total of {} tv ids\n'.format(len(set(tv_ids))))
+    print('\nRetrieved a total of {} tv ids\n'.format(len(tv_ids)))
 
     print('\nRetrieving movie actors')
     movie_actor_ids = get_actor_ids(movie_ids, MOVIE_CREDITS_QUERY)
