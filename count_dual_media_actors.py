@@ -3,11 +3,11 @@ import requests
 from time import sleep
 
 
-MOVIE_DISC_QUERY = 'http://api.themoviedb.org/3/discover/movie?primary_release_date.gte={date1}&primary_release_date.lte={date2}&api_key={api_key}&page={page}'
-TV_DISC_QUERY = 'http://api.themoviedb.org/3/discover/tv?first_air_date.gte={date1}&first_air_date.lte={date2}&api_key={api_key}&page={page}'
+MOVIE_DISC_QUERY = 'http://api.themoviedb.org/3/discover/movie?primary_release_date.gte={date1}&primary_release_date.lte={date2}&api_key={api_key}&page={page}&sort_by=popularity.desc'
+TV_DISC_QUERY = 'http://api.themoviedb.org/3/discover/tv?first_air_date.gte={date1}&first_air_date.lte={date2}&api_key={api_key}&page={page}&sort_by=popularity.desc'
 
-MOVIE_CREDITS_QUERY = 'https://api.themoviedb.org/3/movie/{media_id}/credits?api_key={api_key}'
-TV_CREDITS_QUERY = 'https://api.themoviedb.org/3/tv/{media_id}/credits?api_key={api_key}'
+MOVIE_CREDITS_QUERY = 'https://api.themoviedb.org/3/movie/{media_id}/credits?api_key={api_key}&language=en-US'
+TV_CREDITS_QUERY = 'https://api.themoviedb.org/3/tv/{media_id}/credits?api_key={api_key}&language=en-US'
 
 API_KEY = '606aaffd7ca10f0b80804a1f0674e4e1'
 STATUS_UPDATE = 20  # print status about every 5 sec
@@ -34,7 +34,7 @@ def query_credits(media_id, base_query):
                 raise requests.exceptions.HTTPError
             sleep(WAIT_TIME)
         else:
-            done = True    
+            done = True 
     return response.json()
 
 def query_discovery_page(query):
@@ -98,13 +98,13 @@ def get_cast_ids(media_id, query):
 def get_actor_ids(media_ids, base_query):
     """Retrieves a set tuples of actor (id, name) for an entire list of media ids.
     """
-    all_movie_actor_ids = set()
-    for i, movie_id in enumerate(media_ids):
-        movie_actor_ids = get_cast_ids(movie_id, base_query)
-        all_movie_actor_ids.update(movie_actor_ids)
+    all_actor_ids = set()
+    for i, media_id in enumerate(media_ids):
+        actor_ids = get_cast_ids(media_id, base_query)
+        all_actor_ids.update(actor_ids)
         if i%STATUS_UPDATE == 0:  # give status every 5 seconds
-            print('Current total of actor ids is {}'.format(len(all_movie_actor_ids)))
-    return all_movie_actor_ids
+            print('Current total of actor ids is {}'.format(len(all_actor_ids)))
+    return all_actor_ids
 
 def two_media_actors(tv_actor_ids, movie_actor_ids):
     """Returns intersection of two sets
@@ -118,16 +118,18 @@ if __name__ == '__main__':
     last_date = '2018-12-31'
 
     movie_ids = get_media_ids(first_date, last_date, base_query=MOVIE_DISC_QUERY)
-    print('\nRetrieved a total of {} movie ids\n'.format(len(movie_ids)))
+    print('\nRetrieved a total of {} movie ids\n'.format(len(set(movie_ids))))
 
     tv_ids = get_media_ids(first_date, last_date, base_query=TV_DISC_QUERY)
-    print('\nRetrieved a total of {} tv ids\n'.format(len(tv_ids)))
+    print('\nRetrieved a total of {} tv ids\n'.format(len(set(tv_ids))))
 
     print('\nRetrieving movie actors')
     movie_actor_ids = get_actor_ids(movie_ids, MOVIE_CREDITS_QUERY)
+    print(len(movie_actor_ids))
 
     print('\nRetrieving tv actors')
     tv_actor_ids = get_actor_ids(tv_ids, TV_CREDITS_QUERY)
+    print(len(tv_actor_ids))
 
     busy_actors = two_media_actors(tv_actor_ids, movie_actor_ids)
     print('\nBetween the dates {} and {}, {} actors appear in both movie and tv.'.\
